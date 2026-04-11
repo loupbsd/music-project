@@ -1,0 +1,136 @@
+//GYPSY WOMAN de Crystals Waters
+
+//On définit le tempo, et la signature rythmique (ici du 4/4 c'est à dire 4 noires par mesures)
+setcpm(120/4) 
+
+//Chords
+// On crée ici des variables (accords) que l'on va réutiliser par la suite. Cela permet de limiter la redondance.
+// A noter que le langage Strudel accepte également les notations américaines des accords avec plusieurs voicings intégrés.
+let chord = 
+{Am7:"a3, g4, c5, e5", Bbmaj7:"bb3, a4, d5, f5", 
+ Em7:"e4, e5, g5, b5, d6", Ebmaj7:"eb4, eb5, g5, bb5, d6", 
+ Dm9:"d4, f4, a4, c5, e5", Dm7:"d4, f4, a4, c5, d5",
+ Gm7:"g3, g4, bb4, d5, f5", C7b9:"c4, g4, bb4, db5, e5"}
+//En toute rigueur il faudrait utiliser des bémols et non des dièses mais lors de la création du sample nous avons dû faire un choix.
+
+//organ korg m1
+//La difficulté principale ici est de recréer le son original avec une banque de son réduite.
+//On définit des sections (i1, i2,...) pour alléger l'écriture et éviter la redondance encore une fois.
+let organ = "<i1@2 i2@2 i1@2 i3@2>".pickRestart(
+{i1: `<Dm9@1 Dm9@0.75 Dm7@0.75 Dm7@0.74 Dm7@0.76>*4`,
+ i2: `<Am7@1 Am7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Gm7@1 Gm7@0.75 C7b9@0.75 C7b9@0.75 C7b9@0.75 >*4`,
+ i3: `<Am7@1 Am7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Em7@1 Em7@0.75 Ebmaj7@0.75 Ebmaj7@0.75 Ebmaj7@0.75 >*4`})
+  .pickOut(chord).note().s("gm_percussive_organ:1")
+  .clip(.75).release(.25).gain(.6).room(.4).lpf(4000)._spiral({ steady: .1 })
+  
+//piano style année 80
+//Double l'orgue dans la deuxième partie du morceau. 
+let piano = "<i1@2 i2@2 i1@2 i3@2>".pickRestart(
+{i1: `<Dm9@1 Dm9@0.75 Dm7@0.75 Dm7@0.74 Dm7@0.76>*4`,
+ i2: `<Am7@1 Am7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Gm7@1 Gm7@0.75 C7b9@0.75 C7b9@0.75 C7b9@0.75 >*4`,
+ i3: `<Am7@1 Am7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Bbmaj7@0.75 Em7@1 Em7@0.75 Ebmaj7@0.75 Ebmaj7@0.75 Ebmaj7@0.75 >*4`})
+  .pickOut(chord).note().s("mon_piano").hpf(500).room(.2)
+  .adsr("0:.1:.1:.000002").compressor("-20:10:1:.001:.6").vib(.1).postgain(.5) //On utilise un compresseur pour éviter la saturation (ou clipping).
+  .color("orange")._pianoroll({ labels: 2 })//Ce visuel est très similaire à l'interface d'un DAW comme Ableton ou Logic Pro
+
+//Bass
+//On importe un son de Moog, célèbre synthétiseur omniprésent dans la musique depuis sa création.
+samples({'moog': { 'g3': 'moog/005_Mighty%20Moog%20G3.wav' } }, 'github:tidalcycles/Dirt-Samples/master/')
+//Même problème que pour l'orgue, il est assez difficile de recréer le son de basse original.
+//Grâce à une vidéo où Mr Ski Oakenfull reconstruit entièrement cette chanson sur Ableton Live, j'ai pu repiquer la ligne de basse exacte.
+let bass = "<i1@2 i2@2 i1@2 i3@2>".pickRestart(
+{i1: note(`<a1 e2 a1 [f2 a1] f1 d2 c2 [a1 c2]>*4`),
+ i2: note(`<a1 e2 bb1 [f2 bb1] g1 d2 c2 [g1 c2]>*4`),
+ i3: note(`<a1 e2 bb1 [f2 bb1] e2 a1 eb2 [bb1 eb2]>*4`)
+}).s("moog, z_sawtooth").transpose(12).swingBy(.02,4)
+  .gain(.9).clip(.4).release(.2).lpf(200).lpenv(1.5)
+._scope()
+
+//Discret mais présent tout le long du morceau:
+let shaker = s("sh*16").gain(.2).swingBy(.05,8).room(.2) 
+
+//Dans l'original il y a 2 batteries qui se superposent. La première est exactement celle ci-dessous (même sample, pattern, swing)
+//mais la deuxième est seulement une estimation car il s'agit d'un sample chopped (redécoupé) que je ne peux pas récupérer.
+let drums1 = stack(
+  s("bd bd bd bd bd bd bd [bd bd]").gain(1).slow(2),
+  s("<[~ cp:0]>*2").gain(0.9).room(.1),
+  s("[- oh - oh - oh - oh]").gain(.2), 
+  s("[- - - - hh - - hh hh hh - - hh - - -]").gain(.3).pan(sine).swingBy(.3, 8),
+  ).bank("RolandTR909").swingBy(.02, 4).postgain(.9)
+//La fonction SwingBy est particulièrement importante, elle permet de décaler volontairement certaines notes pour rajouter
+//un aspect organique, vivant, un groove au morceau.
+.color("green")._punchcard()
+let drums2 = stack(
+  s("bd [- [- bd]] bd - ").swingBy(.2, 8),
+  s("- [- rim] - - [- rim] - - -").swingBy(.4, 8),
+  s("- - cp - - - cp -"),
+  s("- oh - [hh hh] - oh - hh").gain(.6).swingBy(.3,8).sustain(.9)
+).bank("RolandTR909").hpf(2000).postgain(.3).swingBy(.02,4)
+.color("orange")._punchcard()
+//Deux petites percussions supplémentaires qui apparaissent plus tard dans le morceaux.
+let ride = s("rd*8").lpf(8000).gain("<.3 .3 .5 .3>*8").room(.3)
+let bongo = s("<[- [- bongo]] [- - bongo bongo]>*4")
+
+
+//Fonction globale qui permet d'arranger le morceau en appelant certains instrument ou non.
+//La notation: let f = , permet de rappeler ces fonctions pour les jouer ensuite.
+$: arrange(
+  [4, stack(organ, shaker)],
+  [4, stack(organ, bass, shaker)],
+  [8, stack(organ, piano, bass, drums1, drums2, shaker)],
+  [32, stack(organ, piano, bass, drums1, drums2, ride, bongo, shaker)]
+  
+).compressor("-1:10:10:.002:.002")
+
+
+//On retrouve ici le piano que nous avons créé, on nomme ainsi tout les fichiers pour pouvoir les utiliser au dessus.
+samples({
+  'mon_piano': {
+    // Octave 3
+    'c3': 'https://loupbsd.github.io/music-project/1.wav', 
+    'c#3': 'https://loupbsd.github.io/music-project/2.wav', 
+    'd3': 'https://loupbsd.github.io/music-project/3.wav', 
+    'd#3': 'https://loupbsd.github.io/music-project/4.wav', 
+    'e3': 'https://loupbsd.github.io/music-project/5.wav', 
+    'f3': 'https://loupbsd.github.io/music-project/6.wav',
+    'f#3': 'https://loupbsd.github.io/music-project/7.wav', 
+    'g3': 'https://loupbsd.github.io/music-project/8.wav', 
+    'g#3': 'https://loupbsd.github.io/music-project/9.wav', 
+    'a3': 'https://loupbsd.github.io/music-project/10.wav', 
+    'bb3': 'https://loupbsd.github.io/music-project/11.wav', 
+    'b3': 'https://loupbsd.github.io/music-project/12.wav',
+    
+    // Octave 4
+    'c4': 'https://loupbsd.github.io/music-project/13.wav', 
+    'c#4': 'https://loupbsd.github.io/music-project/14.wav', 
+    'd4': 'https://loupbsd.github.io/music-project/15.wav', 
+    'eb4': 'https://loupbsd.github.io/music-project/16.wav', 
+    'e4': 'https://loupbsd.github.io/music-project/17.wav', 
+    'f4': 'https://loupbsd.github.io/music-project/18.wav',
+    'f#4': 'https://loupbsd.github.io/music-project/19.wav', 
+    'g4': 'https://loupbsd.github.io/music-project/20.wav', 
+    'g#4': 'https://loupbsd.github.io/music-project/21.wav', 
+    'a4': 'https://loupbsd.github.io/music-project/22.wav', 
+    'bb4': 'https://loupbsd.github.io/music-project/23.wav', 
+    'b4': 'https://loupbsd.github.io/music-project/24.wav',
+
+    // Octave 5
+    'c5': 'https://loupbsd.github.io/music-project/25.wav', 
+    'c#5': 'https://loupbsd.github.io/music-project/26.wav', 
+    'd5': 'https://loupbsd.github.io/music-project/27.wav', 
+    'eb5': 'https://loupbsd.github.io/music-project/28.wav', 
+    'e5': 'https://loupbsd.github.io/music-project/29.wav', 
+    'f5': 'https://loupbsd.github.io/music-project/30.wav',
+    'f#5': 'https://loupbsd.github.io/music-project/31.wav', 
+    'g5': 'https://loupbsd.github.io/music-project/32.wav', 
+    'g#5': 'https://loupbsd.github.io/music-project/33.wav', 
+    'a5': 'https://loupbsd.github.io/music-project/34.wav', 
+    'bb5': 'https://loupbsd.github.io/music-project/35.wav', 
+    'b5': 'https://loupbsd.github.io/music-project/36.wav',
+
+    // Octave 6
+    'c6': 'https://loupbsd.github.io/music-project/37.wav',
+    'c#6': 'https://loupbsd.github.io/music-project/50.wav',
+    'd6': 'https://loupbsd.github.io/music-project/51.wav'
+  }
+});
