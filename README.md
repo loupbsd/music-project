@@ -1,2 +1,3 @@
 # music-project
-Problématique : Comment recréer le plus fidèlement possible une musique ? (Si trop simple, plusieurs musiques ? plusieurs instruments ? )
+Création d'un sample de piano et découverte de strudel.
+
