@@ -64,7 +64,7 @@ let drums2 = stack(
   s("bd [- [- bd]] bd - ").swingBy(.2, 8),
   s("- [- rim] - - [- rim] - - -").swingBy(.4, 8),
   s("- - cp - - - cp -"),
-  s("- oh - [hh hh] - oh - hh").gain(.6).swingBy(.3,8).sustain(.9)
+  s("- oh - [hh hh] - oh - hh").gain(.5).swingBy(.3,8).sustain(.9)
 ).bank("RolandTR909").hpf(2000).postgain(.3).swingBy(.02,4)
 .color("orange")._punchcard()
 //Deux petites percussions supplémentaires qui apparaissent plus tard dans le morceaux.
@@ -77,10 +77,11 @@ let bongo = s("<[- [- bongo]] [- - bongo bongo]>*4")
 $: arrange(
   [4, stack(organ, shaker)],
   [4, stack(organ, bass, shaker)],
-  [8, stack(organ, piano, bass, drums1, drums2, shaker)],
+  [4, stack(organ, bass, shaker)],
+  [8, stack(organ, bass, drums1, drums2, shaker)],
   [32, stack(organ, piano, bass, drums1, drums2, ride, bongo, shaker)]
   
-).compressor("-1:10:10:.002:.002")
+)
 
 
 //On retrouve ici le piano que nous avons créé, on nomme ainsi tout les fichiers pour pouvoir les utiliser au dessus.
